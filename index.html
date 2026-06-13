@@ -94,7 +94,8 @@
 
     const apiKeys = [
         "bed330ef-30f1-4578-9351-4806de50ab7d",
-        "a526230c-fbc2-4846-a10e-563c59cd91b9"
+        "a526230c-fbc2-4846-a10e-563c59cd91b9",
+        "136d13bb-adf7-4cb8-bbd3-e14ef298e9f2"
     ];
     let currentKeyIndex = 0;
 
@@ -132,7 +133,7 @@
                 } else {
                     let errorMsg = data.message || "未知错误";
                     if (errorMsg === "Daily limit reached" || errorMsg.toLowerCase().includes("limit")) {
-                        resultDiv.innerText = "当前线路达到限制，正在自动切换备用线路...";
+                        resultDiv.innerText = `线路${currentKeyIndex + 1}达到限制，正在自动切换备用线路...`;
                         currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
                         attemptedKeys++;
                         await new Promise(resolve => setTimeout(resolve, 500));
@@ -156,7 +157,7 @@
         }
 
         if (!success) {
-            resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 获取失败: 今日所有线路获取次数均已达上限，请明天再试！</p>`;
+            resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 获取失败: 今日所有线路（共${apiKeys.length}条）获取次数均已达上限，请明天再试！</p>`;
         }
 
         fetchBtn.disabled = false;
