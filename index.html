@@ -54,7 +54,6 @@
             text-align: center;
             min-height: 24px;
         }
-        /* 署名样式 */
         .author {
             margin-top: 25px;
             padding-top: 15px;
@@ -64,7 +63,6 @@
             text-align: center;
             letter-spacing: 1px;
         }
-        /* 超链接样式 */
         .bilibili-link {
             color: #fb7299; 
             font-weight: bold;
@@ -94,49 +92,75 @@
     const fetchBtn = document.getElementById('fetchBtn');
     const resultDiv = document.getElementById('result');
 
+    const apiKeys = [
+        "bed330ef-30f1-4578-9351-4806de50ab7d",
+        "a526230c-fbc2-4846-a10e-563c59cd91b9"
+    ];
+    let currentKeyIndex = 0;
+
     async function fetchAccount() {
         fetchBtn.disabled = true;
         fetchBtn.innerText = "获取中...";
         resultDiv.innerText = "正在获取中，请稍候...";
         
-        const apiUrl = "https://4399.nekoinsi.de/api/alt?userApiKey=bed330ef-30f1-4578-9351-4806de50ab7d";
+        let attemptedKeys = 0;
+        let success = false;
 
-        try {
-            const response = await fetch(apiUrl, { method: 'GET' });
-            const data = await response.json();
+        while (attemptedKeys < apiKeys.length && !success) {
+            const apiKey = apiKeys[currentKeyIndex];
+            const apiUrl = `https://4399.nekoinsi.de/api/alt?userApiKey=${apiKey}`;
 
-            if (data.code === 0) {
-                const accountString = data.data[0]; 
-                const parts = accountString.split("----");
-                
-                if (parts.length >= 2) {
-                    resultDiv.innerHTML = `
-                        <p style="color: #28a745; margin-bottom: 10px;">✅ 获取成功！</p>
-                        <p style="margin: 5px 0;">👤 账号: <strong>${parts[0]}</strong></p>
-                        <p style="margin: 5px 0;">🔑 密码: <strong>${parts[1]}</strong></p>
-                    `;
+            try {
+                const response = await fetch(apiUrl, { method: 'GET' });
+                const data = await response.json();
+
+                if (data.code === 0) {
+                    const accountString = data.data[0]; 
+                    const parts = accountString.split("----");
+                    
+                    if (parts.length >= 2) {
+                        resultDiv.innerHTML = `
+                            <p style="color: #28a745; margin-bottom: 10px;">✅ 获取成功！</p>
+                            <p style="margin: 5px 0;">👤 账号: <strong>${parts[0]}</strong></p>
+                            <p style="margin: 5px 0;">🔑 密码: <strong>${parts[1]}</strong></p>
+                        `;
+                        success = true;
+                    } else {
+                        resultDiv.innerText = `获取成功但格式异常: ${accountString}`;
+                        success = true;
+                    }
                 } else {
-                    resultDiv.innerText = `获取成功但格式异常: ${accountString}`;
+                    let errorMsg = data.message || "未知错误";
+                    if (errorMsg === "Daily limit reached" || errorMsg.toLowerCase().includes("limit")) {
+                        resultDiv.innerText = "当前线路达到限制，正在自动切换备用线路...";
+                        currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+                        attemptedKeys++;
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    } else {
+                        resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 获取失败: ${errorMsg}</p>`;
+                        success = true;
+                    }
                 }
-            } else {
-                // --- 优化后的错误处理逻辑 ---
-                let errorMsg = data.message || "未知错误";
-                
-                // 专门针对次数上限的汉化提示
-                if (errorMsg === "Daily limit reached") {
-                    errorMsg = "今日获取次数已达上限，请明天再试！";
+            } catch (error) {
+                if (attemptedKeys < apiKeys.length - 1) {
+                    resultDiv.innerText = "网络请求异常，正在切换备用线路...";
+                    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+                    attemptedKeys++;
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } else {
+                    resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 网络请求出错，请检查网络。</p>`;
+                    success = true;
                 }
-                
-                // 使用红色字体显示错误信息
-                resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 获取失败: ${errorMsg}</p>`;
+                console.error(error);
             }
-        } catch (error) {
-            resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 网络请求出错，请检查网络。</p>`;
-            console.error(error);
-        } finally {
-            fetchBtn.disabled = false;
-            fetchBtn.innerText = "点击获取账号";
         }
+
+        if (!success) {
+            resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 获取失败: 今日所有线路获取次数均已达上限，请明天再试！</p>`;
+        }
+
+        fetchBtn.disabled = false;
+        fetchBtn.innerText = "点击获取账号";
     }
 
     fetchBtn.addEventListener('click', fetchAccount);
@@ -144,3 +168,4 @@
 
 </body>
 </html>
+
