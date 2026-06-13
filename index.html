@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4399小号获取</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            margin-top: 50px; 
+            background-color: #f9f9f9;
+        }
+        .box { 
+            display: inline-block; 
+            text-align: left; 
+            background: #ffffff; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            min-width: 300px;
+        }
+        h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        /* 给按钮加个 id，方便 JS 获取 */
+        #fetchBtn { 
+            display: block;
+            width: 100%;
+            padding: 12px 20px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        #fetchBtn:hover { 
+            background: #0056b3; 
+        }
+        #fetchBtn:active {
+            transform: scale(0.98);
+        }
+        #fetchBtn:disabled {
+            background: #a0cfff;
+            cursor: not-allowed;
+        }
+        .result { 
+            margin-top: 20px; 
+            font-weight: bold; 
+            color: #555;
+            text-align: center;
+            min-height: 24px;
+        }
+        /* 署名样式 */
+        .author {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed #e0e0e0;
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        .author span {
+            color: #fb7299; /* B站经典粉色 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h3>4399小号获取</h3>
+    <!-- 移除了 onclick 属性，改由 JS 绑定 -->
+    <button id="fetchBtn">点击获取账号</button>
+    <div class="result" id="result">等待获取</div>
+    
+    <!-- 作者署名 -->
+    <div class="author">By <span>B站@祁宇晨66</span></div>
+</div>
+
+<script>
+    // 1. 获取页面元素
+    const fetchBtn = document.getElementById('fetchBtn');
+    const resultDiv = document.getElementById('result');
+
+    // 2. 定义获取账号的核心函数
+    async function fetchAccount() {
+        // 防止重复点击，给予用户视觉反馈
+        fetchBtn.disabled = true;
+        fetchBtn.innerText = "获取中...";
+        resultDiv.innerText = "正在获取中，请稍候...";
+        
+        const apiUrl = "https://4399.nekoinsi.de/api/alt?userApiKey=bed330ef-30f1-4578-9351-4806de50ab7d";
+
+        try {
+            const response = await fetch(apiUrl, { method: 'GET' });
+            const data = await response.json();
+
+            if (data.code === 0) {
+                const accountString = data.data[0]; // "账号----密码"
+                const parts = accountString.split("----");
+                
+                if (parts.length >= 2) {
+                    resultDiv.innerHTML = `
+                        <p style="color: #28a745; margin-bottom: 10px;">获取成功</p>
+                        <p style="margin: 5px 0;">账号: <strong>${parts[0]}</strong></p>
+                        <p style="margin: 5px 0;">密码: <strong>${parts[1]}</strong></p>
+                    `;
+                } else {
+                    resultDiv.innerText = `获取成功但格式异常: ${accountString}`;
+                }
+            } else {
+                resultDiv.innerText = `获取失败: ${data.message}`;
+            }
+        } catch (error) {
+            resultDiv.innerText = "网络请求出错，请检查网络或跨域限制。";
+            console.error(error);
+        } finally {
+            // 无论成功还是失败，最终恢复按钮状态
+            fetchBtn.disabled = false;
+            fetchBtn.innerText = "点击获取账号";
+        }
+    }
+
+    // 3. 使用 addEventListener 绑定点击事件 (彻底解决 ReferenceError 报错)
+    fetchBtn.addEventListener('click', fetchAccount);
+</script>
+
+</body>
+</html>
