@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4399小号获取</title>
+    <title>4399 小号获取器</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -66,14 +66,14 @@
         }
         /* 超链接样式 */
         .bilibili-link {
-            color: #fb7299; /* B站经典粉色 */
+            color: #fb7299; 
             font-weight: bold;
-            text-decoration: none; /* 去掉默认下划线 */
-            transition: all 0.3s ease; /* 添加平滑过渡效果 */
+            text-decoration: none; 
+            transition: all 0.3s ease; 
         }
         .bilibili-link:hover {
-            color: #e65c85; /* 鼠标悬停时颜色稍微变深 */
-            text-decoration: underline; /* 鼠标悬停时显示下划线 */
+            color: #e65c85; 
+            text-decoration: underline; 
             cursor: pointer;
         }
     </style>
@@ -81,24 +81,20 @@
 <body>
 
 <div class="box">
-    <h3>4399小号获取</h3>
+    <h3>🎮 4399 小号获取</h3>
     <button id="fetchBtn">点击获取账号</button>
-    <div class="result" id="result">等待获取</div>
+    <div class="result" id="result">等待获取...</div>
     
-    <!-- 作者署名，使用 a 标签并设置 target="_blank" 在新标签页打开 -->
     <div class="author">
         By <a href="https://space.bilibili.com/3493087443683786" target="_blank" class="bilibili-link">B站@祁宇晨66</a>
     </div>
 </div>
 
 <script>
-    // 1. 获取页面元素
     const fetchBtn = document.getElementById('fetchBtn');
     const resultDiv = document.getElementById('result');
 
-    // 2. 定义获取账号的核心函数
     async function fetchAccount() {
-        // 防止重复点击，给予用户视觉反馈
         fetchBtn.disabled = true;
         fetchBtn.innerText = "获取中...";
         resultDiv.innerText = "正在获取中，请稍候...";
@@ -110,32 +106,39 @@
             const data = await response.json();
 
             if (data.code === 0) {
-                const accountString = data.data[0]; // "账号----密码"
+                const accountString = data.data[0]; 
                 const parts = accountString.split("----");
                 
                 if (parts.length >= 2) {
                     resultDiv.innerHTML = `
                         <p style="color: #28a745; margin-bottom: 10px;">✅ 获取成功！</p>
-                        <p style="margin: 5px 0;">账号: <strong>${parts[0]}</strong></p>
-                        <p style="margin: 5px 0;">密码: <strong>${parts[1]}</strong></p>
+                        <p style="margin: 5px 0;">👤 账号: <strong>${parts[0]}</strong></p>
+                        <p style="margin: 5px 0;">🔑 密码: <strong>${parts[1]}</strong></p>
                     `;
                 } else {
                     resultDiv.innerText = `获取成功但格式异常: ${accountString}`;
                 }
             } else {
-                resultDiv.innerText = `获取失败: ${data.message}`;
+                // --- 优化后的错误处理逻辑 ---
+                let errorMsg = data.message || "未知错误";
+                
+                // 专门针对次数上限的汉化提示
+                if (errorMsg === "Daily limit reached") {
+                    errorMsg = "今日获取次数已达上限，请明天再试！";
+                }
+                
+                // 使用红色字体显示错误信息
+                resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 获取失败: ${errorMsg}</p>`;
             }
         } catch (error) {
-            resultDiv.innerText = "网络请求出错，请检查网络或跨域限制。";
+            resultDiv.innerHTML = `<p style="color: #dc3545; margin: 0;">❌ 网络请求出错，请检查网络。</p>`;
             console.error(error);
         } finally {
-            // 无论成功还是失败，最终恢复按钮状态
             fetchBtn.disabled = false;
             fetchBtn.innerText = "点击获取账号";
         }
     }
 
-    // 3. 使用 addEventListener 绑定点击事件 
     fetchBtn.addEventListener('click', fetchAccount);
 </script>
 
