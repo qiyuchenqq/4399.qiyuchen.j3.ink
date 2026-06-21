@@ -109,10 +109,17 @@
 
         while (attemptedKeys < apiKeys.length && !success) {
             const apiKey = apiKeys[currentKeyIndex];
-            const apiUrl = `https://4399.nekoinsi.de/api/alt?userApiKey=${apiKey}`;
+            // 移除 URL 中的 ?userApiKey=xxx
+            const apiUrl = `https://4399.nekoinsi.de/api/alt`;
 
             try {
-                const response = await fetch(apiUrl, { method: 'GET' });
+                // 将 apiKey 放入 Authorization 请求头中
+                const response = await fetch(apiUrl, { 
+                    method: 'GET',
+                    headers: {
+                        'Authorization': apiKey
+                    }
+                });
                 const data = await response.json();
 
                 if (data.code === 0) {
@@ -169,4 +176,3 @@
 
 </body>
 </html>
-
